@@ -1,3 +1,5 @@
+package week08;
+
 /**
  * Created by Bilal on 8.12.2016 г..
  */
@@ -15,17 +17,17 @@ public class Spell {
         this.name = name;
     }
 
-    public int getDamage() {
-        return damage;
-    }
-
     public static Spell generate() {
         String name = names[(int)(names.length * Math.random())];
         int points = (int)(10*Math.random()) + 10;
         int damage = (int)(20*Math.random()) + 20;
         int range = (int)(3*Math.random()) + 1;
-        
+
         return new Spell(name,damage,points,range);
+    }
+
+    public int getDamage() {
+        return damage;
     }
 
     public String getName() {

@@ -60,6 +60,20 @@ public class MySQLHelper {
         }
     }
 
+    public boolean deleteFrom(String table, String whereClause) {
+        try {
+            Statement st = conn.createStatement();
+            String req = String.format("delete from %s where %s;", table, whereClause);
+            st.execute(req);
+
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            return false;
+        }
+    }
+
     public boolean update(String table, Object o) {
         Mappable mappable = (Mappable) o;
         StringBuilder valsBuilder = new StringBuilder();

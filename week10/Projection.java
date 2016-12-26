@@ -1,5 +1,6 @@
 package week10;
 
+import org.jetbrains.annotations.Nullable;
 import week09.Mappable;
 import week09.MySQLHelper;
 
@@ -20,10 +21,10 @@ public class Projection implements Mappable {
     private String type;
     private Date date;
     private Time time;
-    private CinemaHall hall;
+    private Reservation hall;
 
     public Projection() {
-        hall = new CinemaHall();
+        hall = new Reservation();
     }
 
     public static List<Projection> showProjections(int movieId, MySQLHelper helper) {
@@ -53,6 +54,15 @@ public class Projection implements Mappable {
         return projections;
     }
 
+    @Nullable
+    public static Projection pickProjection(List<Projection> projections, int projId) {
+        for (Projection projection : projections) {
+            if (projection.getId() == projId)
+                return projection;
+        }
+        return null;
+    }
+
     @Override
     public Map<String, String> toMap() {
         return null;
@@ -74,7 +84,7 @@ public class Projection implements Mappable {
             e.printStackTrace();
         }
 
-        this.hall = CinemaHall.getHall(this);
+        this.hall = Reservation.getHall(this);
 
         return this;
     }
@@ -88,5 +98,17 @@ public class Projection implements Mappable {
         return String.format("ID: %d\nMovie ID: %d\nType: %s\nDate: %s\nTime: %s\nAvailable spots: %d\n%s\n", id, movieId, type,
                 new SimpleDateFormat("dd-MM-yy").format(date),
                 new SimpleDateFormat("HH:mm").format(time), hall.getAvailableSeats(), hall.toString());
+    }
+
+    public boolean isSeatTaken(int x, int y) {
+        return hall.taken(x, y);
+    }
+
+    public void put(int x, int y, String userName) {
+        hall.put(x - 1, y - 1, id, userName);
+    }
+
+    public void serialize(MySQLHelper helper) {
+        hall.serialize(id, helper);
     }
 }

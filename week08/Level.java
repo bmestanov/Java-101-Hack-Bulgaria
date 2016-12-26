@@ -1,6 +1,6 @@
+package week08;
 
 import java.io.*;
-import java.util.ArrayList;
 
 /**
  * Created by Bilal on 8.12.2016 г..

@@ -4,16 +4,19 @@ import week09.MySQLHelper;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
 /**
  * Created by mestanov on 24.12.16.
  */
 public class UI {
-    private static Scanner scanner;
-    public static MySQLHelper helper;
-    public static final String DB_NAME = "mySqlTest";
+    static final String DB_NAME = "mySqlTest";
     public static Map<Command, Runnable> commands;
+    private static Scanner scanner;
+    private static MySQLHelper helper;
 
     static {
         helper = new MySQLHelper(DB_NAME);
@@ -68,21 +71,53 @@ public class UI {
                 int tickets = scanner.nextInt();
                 scanner.nextLine();
 
-                //Step 2
-                Movie.showMovies(helper);
-                System.out.println("Enter the Movie ID> ");
-                int movie = scanner.nextInt();
-                scanner.nextLine();
 
                 //Step 3
-                System.out.println("Enter projection ID> ");
-                List<Projection> projections = Projection.showProjections(movie, helper);
+                List<Projection> projections;
+                do {
+                    Movie.showMovies(helper);
+                    System.out.println("Enter the Movie ID> ");
+                    int movieId = scanner.nextInt();
+                    scanner.nextLine();
+                    projections = Projection.showProjections(movieId, helper);
+                } while (projections == null || projections.isEmpty());
 
-                int projection = scanner.nextInt();
-                scanner.nextLine();
+                Projection selected;
+                do {
+                    System.out.println("Enter projection ID> ");
+                    int projId = scanner.nextInt();
+                    scanner.nextLine();
+                    selected = Projection.pickProjection(projections, projId);
+                } while (selected == null);
 
 
+                System.out.println(selected);
+                for (int i = 0; i < tickets; i++) {
+                    System.out.println("Enter seat " + (i + 1) + "> ");
+                    int x = scanner.nextInt(), y = scanner.nextInt();
+                    scanner.nextLine();
+                    if (selected.isSeatTaken(x, y)) {
+                        System.err.println("That seat is taken.");
+                        i--;
+                    } else {
+                        selected.put(x, y, name);
+                    }
+                }
 
+                System.out.println("All set, type finalize to finish> ");
+                String command = scanner.nextLine();
+                if (command.equals(Command.FINISH)) {
+                    selected.serialize(helper);
+                }
+            }
+        });
+        commands.put(new Command("cancel reservation", "cancel a person's reservation"), new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("Enter the username of the reservation to be cancelled> ");
+                String name = scanner.nextLine();
+
+                Reservation.cancelReservations(name, helper);
             }
         });
     }

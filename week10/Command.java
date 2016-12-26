@@ -6,6 +6,7 @@ package week10;
 public class Command {
     public static final String EXIT = "exit";
     public static final String GIVE_UP = "give up";
+    public static final String FINISH = "finalize";
     private String command;
     private String description;
 

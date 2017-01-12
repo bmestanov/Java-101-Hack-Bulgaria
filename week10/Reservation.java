@@ -41,7 +41,7 @@ public class Reservation {
     }
 
     public static void cancelReservations(String userName, MySQLHelper helper) {
-        helper.deleteFrom(TABLE_NAME, String.format("username = '%s'", userName));
+        helper.deleteWhere(TABLE_NAME, String.format("username = '%s'", userName));
     }
 
     public boolean put(int x, int y, int projId, String userName) {

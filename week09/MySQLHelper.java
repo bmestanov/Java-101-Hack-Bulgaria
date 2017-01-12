@@ -10,7 +10,7 @@ public class MySQLHelper {
 
     public MySQLHelper(String dbName) {
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost/" + dbName, "root", "");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/" + dbName, "root", "79971616x");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -60,20 +60,6 @@ public class MySQLHelper {
         }
     }
 
-    public boolean deleteFrom(String table, String whereClause) {
-        try {
-            Statement st = conn.createStatement();
-            String req = String.format("delete from %s where %s;", table, whereClause);
-            st.execute(req);
-
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-
-            return false;
-        }
-    }
-
     public boolean update(String table, Object o) {
         Mappable mappable = (Mappable) o;
         StringBuilder valsBuilder = new StringBuilder();
@@ -102,7 +88,10 @@ public class MySQLHelper {
     }
 
 
-    public List<List<String>> selectFrom(String table, String colSelect, String whereClause, String orderClause) {
+    public List<List<String>> selectFrom(String table,
+                                         String colSelect,
+                                         String whereClause,
+                                         String orderClause) {
         try {
             List<List<String>> list = new LinkedList<>();
             Statement st = conn.createStatement();
@@ -149,5 +138,19 @@ public class MySQLHelper {
         }
 
         return true;
+    }
+
+    public boolean deleteWhere(String tableName, String whereClause) {
+        try {
+            Statement st = conn.createStatement();
+            String req = String.format("delete from %s %s;", tableName, whereClause);
+            st.execute(req);
+
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            return false;
+        }
     }
 }

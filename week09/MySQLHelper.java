@@ -10,7 +10,7 @@ public class MySQLHelper {
 
     public MySQLHelper(String dbName) {
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost/" + dbName, "root", "79971616x");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost/" + dbName, "root", "");
         } catch (SQLException e) {
             e.printStackTrace();
         }

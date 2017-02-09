@@ -39,24 +39,18 @@ public class ThreadedSudokuValidator {
                 () -> allValid(board.getZones()));
 
         ExecutorService service = Executors.newFixedThreadPool(THREADS);
-
-        long t1 = System.currentTimeMillis();
         List<Future<Boolean>> results = service.invokeAll(predicates);
 
-        boolean result = results.stream().map(future -> {
+        boolean result = results.stream().allMatch(future -> {
             try {
                 return future.get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
-
             return false;
-        }).allMatch(bool -> bool);
+        });
 
-        long t2 = System.currentTimeMillis();
         service.shutdown();
-
-        System.out.printf("Took %d ms \n", t2 - t1);
         return result;
     }
 
@@ -71,8 +65,7 @@ public class ThreadedSudokuValidator {
     //A collection of segments
     private boolean allValid(byte[][] segments) {
         return Arrays.stream(segments)
-                .map(this::isValidSegment)
-                .allMatch(bool -> bool);
+                .allMatch(this::isValidSegment);
     }
 
     public static class SudokuBoard {

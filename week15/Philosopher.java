@@ -17,18 +17,12 @@ public class Philosopher extends Thread {
         while (true) {
             try {
                 fork.acquire();
+                System.out.println(getName() + ": Nom nom nom!");
+                fork.release();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            System.out.println(getName() + ": Nom nom nom!");
-            try {
-                Thread.sleep(3_000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            fork.release();
         }
     }
 

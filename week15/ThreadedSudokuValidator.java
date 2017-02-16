@@ -69,9 +69,9 @@ public class ThreadedSudokuValidator {
     }
 
     public static class SudokuBoard {
-        static final int SIZE = 9;
-        static final int SUBSIZE = 3;
-        final byte[][] board;
+        public static final int SIZE = 9;
+        public static final int SUBSIZE = 3;
+        private final byte[][] board;
 
         public SudokuBoard(byte[][] board) {
             this.board = board;

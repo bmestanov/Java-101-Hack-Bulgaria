@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -21,58 +22,73 @@ public class WebCrawler {
     private String root;
     private ArrayList<String> results;
     private ExecutorService service;
+    private int max_depth;
 
-    public WebCrawler(String root) {
+    public WebCrawler(String root, int max_depth) {
         this.root = root;
         this.results = new ArrayList<>();
+        this.max_depth = max_depth;
         this.service = Executors.newCachedThreadPool();
     }
 
-    public static void main(String[] args) throws IOException {
-        WebCrawler crawler = new WebCrawler("http://www.emag.bg/");
+    public static void main(String[] args) {
+        WebCrawler crawler = new WebCrawler("http://www.emag.bg", 2);
 
         crawler.crawl();
+        List<String> results = crawler.getResults();
+        results.forEach(System.out::println);
     }
 
-    public void crawl() throws IOException {
-        crawl(new Link(root));
+    /**
+     * A blocking method - run in a separate thread
+     */
+    public void crawl() {
+        try {
+            crawl(new Link(root), 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                service.awaitTermination(1, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            service.shutdown();
+        }
     }
 
-    private void crawl(Link link) throws IOException {
+    private void crawl(Link link, int depth) throws IOException {
+        if (depth >= max_depth) {
+            return;
+        }
+
         String response = fetchResponse(link);
 
         String target = getTarget(response);
         if (target != null) {
-            System.out.println(target);
+            addToResult(target.trim());
             return;
         }
 
         List<Link> parsed = parseLinks(response);
 
-        System.out.println(parsed);
-
-        /*for (Link parsedLink : parsed) {
-            if (parsedLink.isValid() && !parsedLink.recursive(link)) {
-                String l = parsedLink.getSrc();
-                if (link.isRelative()) {
-                    l = root + l;
+        for (Link parsedLink : parsed) {
+            service.execute(() -> {
+                try {
+                    crawl(parsedLink, depth + 1);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+            });
+        }
+    }
 
-                Link newLink = new Link(l);
-                service.execute(() -> {
-                    try {
-                        crawl(newLink);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-        }*/
+    private synchronized void addToResult(String target) {
+        results.add(target);
     }
 
     private String getTarget(String response) {
-        //ToDo Write the regex
-        Pattern pattern = Pattern.compile("<h1 class=\"page-title\".*?>(.*)</h1>");
+        Pattern pattern = Pattern.compile("<h1 class=\"page-title\">([\\s\\S]*)</h1>");
         Matcher matcher = pattern.matcher(response);
 
         if (matcher.find()) {
@@ -90,28 +106,35 @@ public class WebCrawler {
         List<Link> links = new ArrayList<>();
         while (matcher.find()) {
             links.add(new Link(matcher.group(1)));
-            System.out.println(matcher.group(1));
         }
         return links.stream()
-                .filter(Link.isValid)
+                .filter(Link::isAsset)
                 .map(s -> Link.toAbsolute(s, root))
                 .collect(Collectors.toList());
     }
 
     @NotNull
-    private String fetchResponse(Link link) throws IOException {
-        URL url = new URL(link.getSrc());
+    private String fetchResponse(Link link) {
         StringBuilder stringBuilder = new StringBuilder();
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(url.openStream())
-        );
+        try {
+            URL url = new URL(link.getSrc());
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(url.openStream())
+            );
 
-        String response;
-        while ((response = reader.readLine()) != null) {
-            stringBuilder.append(response);
+            String response;
+            while ((response = reader.readLine()) != null) {
+                stringBuilder.append(response);
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            // Swallowing this for now
         }
-
-        reader.close();
         return stringBuilder.toString();
+    }
+
+    public ArrayList<String> getResults() {
+        return results;
     }
 }

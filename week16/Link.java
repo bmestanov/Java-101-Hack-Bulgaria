@@ -1,28 +1,15 @@
 package week16;
 
-import java.util.function.Predicate;
-
 /**
  * Created on 15/02/2017.
  */
 public class Link {
     private static String[] ASSETS = {".js", ".css", ".png", ".jpg", ".ico"};
-    public static Predicate<Link> isValid;
     private String src;
 
-    static {
-        isValid = link -> {
-            for (String extension : ASSETS) {
-                if (link.src.endsWith(extension))
-                    return true;
-            }
-            return false;
-        };
-    }
-
     public static Link toAbsolute(Link link, String root) {
-        if (link.src.startsWith("/")) {
-            return new Link(link.src + root);
+        if (link.isRelative()) {
+            return new Link(root + link.src);
         }
 
         return link;
@@ -32,12 +19,9 @@ public class Link {
         this.src = src;
     }
 
-    public boolean isAbsolute() {
-        return src.contains("http://");
-    }
 
     public boolean isRelative() {
-        return src.contains("/");
+        return src.startsWith("/");
     }
 
     public boolean isAsset() {

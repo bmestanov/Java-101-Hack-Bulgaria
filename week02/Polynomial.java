@@ -5,9 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created on 30/03/2017.
- */
 public class Polynomial {
     private final List<Integer> coefficients;
 

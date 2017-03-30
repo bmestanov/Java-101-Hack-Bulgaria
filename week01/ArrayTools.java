@@ -1,7 +1,4 @@
-package week01.hacktools;
-
-import java.lang.Comparable;
-import java.lang.Math;
+package week01;
 
 public class ArrayTools {
     public static <T> String toString(T[] arr) {
